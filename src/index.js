@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import styled from 'styled-components/native';
 
 const Page = styled.SafeAreaView`
@@ -9,23 +9,29 @@ const Page = styled.SafeAreaView`
 `;
 const ButtonsView = styled.View`
   flex-direction: row;
-  height: 40px;
-  margin-top: 120px;
+  margin-top: 200px;
 `;
-const Image = styled.Image``;
+const Image = styled.Image`
+  width: 450px;
+`;
 const Button = styled.TouchableOpacity`
-  flex: 1;
+  width: 120px;
   justify-content: center;
   align-items: center;
   background-color: #fff;
-  height: 40px;
+  height: 120px;
   margin: 17px;
-  border-radius: 9px;
+  border-radius: 60px;
 `;
 const SecondsText = styled.Text`
-  margin-top: -160px;
+  margin-top: -150px;
   color: #fff;
-  font-size: 65px;
+  font-size: 55px;
+  font-weight: bold;
+`;
+const OldText = styled.Text`
+  color: #fff;
+  font-size: 25px;
   font-weight: bold;
 `;
 const ButtonText = styled.Text`
@@ -35,19 +41,44 @@ const ButtonText = styled.Text`
 `;
 
 export default function App() {
+  const [seconds, setSeconds] = useState(0);
+  const [Oldseconds, setOldSeconds] = useState(0);
+  const [isActive, setIsActive] = useState(false);
+  function toggle() {
+    setIsActive(!isActive);
+  }
+  function reset() {
+    setOldSeconds(seconds);
+    setSeconds(0);
+    setIsActive(false);
+  }
+  useEffect(() => {
+    let interval = null;
+    if (isActive) {
+      interval = setInterval(() => {
+        setSeconds((seconds) => seconds + 0.1);
+      }, 100);
+    } else if (!isActive && seconds !== 0) {
+      clearInterval(interval);
+    }
+    return () => clearInterval(interval);
+  }, [isActive, seconds]);
   return (
     <Page>
-      <Image source={require('./cronometro.png')} />
-      <SecondsText>0.0</SecondsText>
+      <Image source={require('./cronometro.png')} resizeMode="contain" />
+      <SecondsText>{seconds.toFixed(1)}</SecondsText>
 
       <ButtonsView>
-        <Button>
-          <ButtonText>Vai</ButtonText>
+        <Button onPress={toggle}>
+          <ButtonText>{isActive ? 'Pausar' : 'Vai'}</ButtonText>
         </Button>
-        <Button>
+        <Button onPress={reset}>
           <ButtonText>Zerar</ButtonText>
         </Button>
       </ButtonsView>
+      <OldText>
+        {Oldseconds !== 0 && `O último timer foi ${Oldseconds.toFixed(1)}s`}
+      </OldText>
     </Page>
   );
 }
